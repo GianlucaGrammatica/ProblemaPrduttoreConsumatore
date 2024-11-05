@@ -10,6 +10,7 @@ namespace ProblemaPrduttoreConsumatore
     {
         static void Main(string[] args)
         {
+            int ItemsCount = 0;
         }
     }
 }
