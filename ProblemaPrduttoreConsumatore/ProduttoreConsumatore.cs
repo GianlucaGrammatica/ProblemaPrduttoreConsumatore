@@ -7,42 +7,74 @@ using System.Threading.Tasks;
 
 namespace ProblemaPrduttoreConsumatore
 {
-    internal class ProduttoreConsumatore
+    public class ProduttoreConsumatore
     {
         private readonly object Lock = new object();
         private Queue<int> Queue = new Queue<int>();
+        private int counter = 0;
+        private int limit = 5000;
 
-        private int QueueLength = 4;
+        private int QueueLength = 50;
 
-        public void Produce(int Input)
+        public void Run() {
+
+            Thread t1 = new Thread(() => { Produce(); });
+            Thread t2 = new Thread(() => { Consume(); });
+
+            t1.Start();
+            t2.Start();
+
+            t1.Join();
+            t2.Join();
+
+            Console.WriteLine("END");
+            Console.ReadKey();
+        }
+
+        public void Produce()
         {
-            lock (Lock) {
-
-                if (Queue.Count <= QueueLength)
-                {
-                    Queue.Enqueue(Input);
+            while (counter < limit)
+            {
+                lock (Lock)
+                {                
+                    if (Queue.Count <= QueueLength)
+                    {
+                        Queue.Enqueue(counter++);
+                        Console.ForegroundColor = ConsoleColor.Green;
+                        Console.WriteLine("Producttore:" + Queue.Count);
+                        Console.ForegroundColor = ConsoleColor.White;                        
+                    }
+                    else {
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine("Producttore: Full" + counter);
+                        Console.ForegroundColor = ConsoleColor.White;
+                    }
+                    //Thread.Sleep(100);
                 }
-                else
-                {
-                    Monitor.Wait(Lock);
-                }
-
-                Monitor.Pulse(Lock);
             }
         }
 
         public void Consume()
         {
-            lock(Lock)
+            while (counter < limit)
             {
-                while (!Queue.Any())
+                lock (Lock)
                 {
-                    Monitor.Wait(Lock);
+                    if (Queue.Count > 0)
+                    {
+                        int v = Queue.Dequeue();
+                        Console.ForegroundColor = ConsoleColor.Blue;
+                        Console.WriteLine("Consumatore:" + Queue.Count);
+                        Console.ForegroundColor = ConsoleColor.White;                        
+                    }
+                    else {
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine("Consumatore: Empty" + counter);
+                        Console.ForegroundColor = ConsoleColor.White;
+                    }
+
+                    //Thread.Sleep(300);
                 }
-
-                Queue.Dequeue();
-
-                Monitor.Pulse(Lock);
             }
         }
     }
